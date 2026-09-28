@@ -227,7 +227,7 @@ class TaskServiceTest {
     Task second = task(2L);
     when(repository.findAll(Sort.by("id"))).thenReturn(List.of(first, second));
 
-    List<TaskResponse> result = service.findAll(null);
+    List<TaskResponse> result = service.findAll(null, null);
 
     assertEquals(List.of(TaskResponse.from(first), TaskResponse.from(second)), result);
     verify(repository).findAll(Sort.by("id"));
@@ -240,17 +240,65 @@ class TaskServiceTest {
     when(repository.findAllByStatus(TaskStatus.IN_PROGRESS, Sort.by("id")))
         .thenReturn(List.of(first, second));
 
-    List<TaskResponse> result = service.findAll(TaskStatus.IN_PROGRESS);
+    List<TaskResponse> result = service.findAll(TaskStatus.IN_PROGRESS, null);
 
     assertEquals(List.of(TaskResponse.from(first), TaskResponse.from(second)), result);
     verify(repository).findAllByStatus(TaskStatus.IN_PROGRESS, Sort.by("id"));
   }
 
   @Test
+  void findAllFiltersByLowPriorityAndOrdersById() {
+    Task first = task(1L, TaskStatus.TODO, TaskPriority.LOW);
+    when(repository.findAllByPriority(TaskPriority.LOW, Sort.by("id"))).thenReturn(List.of(first));
+
+    List<TaskResponse> result = service.findAll(null, TaskPriority.LOW);
+
+    assertEquals(List.of(TaskResponse.from(first)), result);
+    verify(repository).findAllByPriority(TaskPriority.LOW, Sort.by("id"));
+  }
+
+  @Test
+  void findAllFiltersByMediumPriorityAndOrdersById() {
+    Task first = task(1L, TaskStatus.TODO, TaskPriority.MEDIUM);
+    when(repository.findAllByPriority(TaskPriority.MEDIUM, Sort.by("id")))
+        .thenReturn(List.of(first));
+
+    List<TaskResponse> result = service.findAll(null, TaskPriority.MEDIUM);
+
+    assertEquals(List.of(TaskResponse.from(first)), result);
+    verify(repository).findAllByPriority(TaskPriority.MEDIUM, Sort.by("id"));
+  }
+
+  @Test
+  void findAllFiltersByHighPriorityAndOrdersById() {
+    Task first = task(1L, TaskStatus.TODO, TaskPriority.HIGH);
+    when(repository.findAllByPriority(TaskPriority.HIGH, Sort.by("id"))).thenReturn(List.of(first));
+
+    List<TaskResponse> result = service.findAll(null, TaskPriority.HIGH);
+
+    assertEquals(List.of(TaskResponse.from(first)), result);
+    verify(repository).findAllByPriority(TaskPriority.HIGH, Sort.by("id"));
+  }
+
+  @Test
+  void findAllFiltersByStatusAndPriorityCombinedAndOrdersById() {
+    Task first = task(1L, TaskStatus.IN_PROGRESS, TaskPriority.HIGH);
+    when(repository.findAllByStatusAndPriority(
+            TaskStatus.IN_PROGRESS, TaskPriority.HIGH, Sort.by("id")))
+        .thenReturn(List.of(first));
+
+    List result = service.findAll(TaskStatus.IN_PROGRESS, TaskPriority.HIGH);
+
+    assertEquals(List.of(TaskResponse.from(first)), result);
+    verify(repository)
+        .findAllByStatusAndPriority(TaskStatus.IN_PROGRESS, TaskPriority.HIGH, Sort.by("id"));
+  }
+
+  @Test
   void findAllReturnsEmptyListWhenThereAreNoTasks() {
     when(repository.findAll(Sort.by("id"))).thenReturn(List.of());
 
-    assertEquals(List.of(), service.findAll(null));
+    assertEquals(List.of(), service.findAll(null, null));
   }
 
   @Test
@@ -325,6 +373,13 @@ class TaskServiceTest {
     Task task =
         new Task(
             "Título original", "Descripción original", status, TaskPriority.LOW, TODAY.plusDays(1));
+    ReflectionTestUtils.setField(task, "id", id);
+    return task;
+  }
+
+  private Task task(Long id, TaskStatus status, TaskPriority priority) {
+    Task task =
+        new Task("Título original", "Descripción original", status, priority, TODAY.plusDays(1));
     ReflectionTestUtils.setField(task, "id", id);
     return task;
   }
