@@ -302,6 +302,16 @@ class TaskServiceTest {
   }
 
   @Test
+  void findAllReturnsEmptyListWhenPriorityHasNoMatches() {
+    when(repository.findAllByPriority(TaskPriority.HIGH, Sort.by("id"))).thenReturn(List.of());
+
+    List<TaskResponse> result = service.findAll(null, TaskPriority.HIGH);
+
+    assertEquals(List.of(), result);
+    verify(repository).findAllByPriority(TaskPriority.HIGH, Sort.by("id"));
+  }
+
+  @Test
   void deleteRemovesExistingTask() {
     Task existing = task(1L);
     when(repository.findById(1L)).thenReturn(Optional.of(existing));

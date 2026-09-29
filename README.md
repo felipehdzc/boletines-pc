@@ -53,7 +53,8 @@ también valida las peticiones cuando se invoca directamente, fuera del controla
 | `PUT` | `/api/tasks/{id}` | `200 OK` o `404 Not Found`. |
 | `DELETE` | `/api/tasks/{id}` | `204 No Content` o `404 Not Found`. |
 
-### Ejemplo de CRUD
+
+## Ejemplo de CRUD
 
 La fecha de ejemplo debe seguir siendo hoy o futura al ejecutar la petición.
 En una base de datos recién iniciada, la primera tarea tendrá el identificador `1`;
@@ -73,7 +74,7 @@ curl -i http://localhost:8080/api/tasks/1
 # Filtro de prioridad
 curl -i 'http://localhost:8080/api/tasks?priority=HIGH'
 curl -i 'http://localhost:8080/api/tasks?status=TODO&priority=HIGH'
-curl -i 'http://localhost:8080/api/tasks?priority=URGENT'
+
 
 # Actualizar
 curl -i -X PUT http://localhost:8080/api/tasks/1 \
@@ -83,6 +84,34 @@ curl -i -X PUT http://localhost:8080/api/tasks/1 \
 # Borrar y comprobar el 404
 curl -i -X DELETE http://localhost:8080/api/tasks/1
 curl -i http://localhost:8080/api/tasks/1
+```
+
+## Ejemplos de uso del Filtro de Tareas por Prioridad
+
+### 1. Filtrar tareas únicamente por prioridad Alta
+```bash
+curl -X GET "http://localhost:8080/api/tasks?priority=HIGH"
+```
+
+### 2. Filtrar tareas combinando Estado y Prioridad
+```bash
+curl -X GET "http://localhost:8080/api/tasks?status=TODO&priority=LOW"
+```
+
+### 3. Respuesta Errónea (400 Bad Request) por prioridad inválida
+```bash
+curl -X GET "http://localhost:8080/api/tasks?priority=high"
+
+Nota: Los valores del parámetro obligatoriamente deben estar en mayúsculas (LOW, MEDIUM, HIGH).
+```
+
+### 4. Respuesta errónea por prioridad inexistente.
+```bash
+curl -i 'http://localhost:8080/api/tasks?priority=URGENT'
+```
+### 5. Respuesta errónea por prioridad vacía.
+```bash
+curl -i 'http://localhost:8080/api/tasks?priority='
 ```
 
 ### Errores
